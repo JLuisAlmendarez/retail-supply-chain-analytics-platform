@@ -1,0 +1,14 @@
+data/*
+!data/*.dvc
+!data/.gitignore
+#El paquete de herramientas de terraform
+.terraform 
+#El diccionario de recursos y secretos
+#El backup del diccionario
+*.tfstate*
+#Un proxy de las variables utilizadas en los archivos .tf
+*.tfvars 
+__pycache__/
+.venv/
+.ipynb_checkpoints/
+.env
