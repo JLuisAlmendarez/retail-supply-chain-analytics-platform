@@ -1,0 +1,61 @@
+name: terraform-azure
+
+on:
+  pull_request:
+    paths:
+      - "infra/terraform/azure/**"
+      - ".github/workflows/terraform-azure.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/terraform/azure/**"
+      - ".github/workflows/terraform-azure.yml"
+
+concurrency:
+  group: terraform-azure
+  cancel-in-progress: false
+
+permissions:
+  id-token: write   # pedir el token OIDC a GitHub
+  contents: read    # leer el código
+
+env:
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  ARM_USE_OIDC: "true"
+  TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform/azure
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.17.0"
+          terraform_wrapper: false
+
+      - name: Formato
+        run: terraform fmt -check -recursive
+
+      - name: Init
+        run: terraform init -input=false
+
+      - name: Validate
+        run: terraform validate
+
+      - name: Plan
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Apply (solo en push a main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: terraform apply -input=false tfplan
