@@ -16,8 +16,6 @@ terraform {
       project = "supply-chain"
     }
   }
-
-
 }
 
 
