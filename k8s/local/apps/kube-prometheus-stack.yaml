@@ -22,6 +22,10 @@ spec:
               type: loki
               url: http://loki.monitoring.svc.cluster.local:3100
               access: proxy
+            - name: Tempo
+              type: tempo
+              url: http://tempo.monitoring.svc.cluster.local:3200
+              access: proxy
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
