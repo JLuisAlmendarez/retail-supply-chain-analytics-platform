@@ -13,7 +13,7 @@ locals {
   }
   delegable_role_ids = join(", ", values(local.delegable_roles))
 
-  github_repo = "JLuisAlmendarez/retail-supply-chain-analytics-platform"
+  github_repo = "JLuisAlmendarez@82072947/retail-supply-chain-analytics-platform@1440189210"
   github_oidc = "https://token.actions.githubusercontent.com"
 
   tags = {

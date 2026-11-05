@@ -14,3 +14,8 @@ variable "environment" {
     error_message = "environment debe ser \"dev\" o \"prod\"."
   }
 }
+
+variable "data_admin_object_id" {
+  type        = string
+  description = "Object ID en Entra ID de la persona que administra los datos (acceso de DVC)."
+}

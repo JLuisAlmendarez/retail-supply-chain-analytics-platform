@@ -26,6 +26,7 @@ env:
   ARM_USE_OIDC: "true"
   TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
   TF_IN_AUTOMATION: "true"
+  TF_VAR_data_admin_object_id: ${{ vars.DATA_ADMIN_OBJECT_ID }}
 
 jobs:
   terraform:
