@@ -1,0 +1,5 @@
+[core]
+    remote = lake
+['remote "lake"']
+    url = azure://dvc
+    account_name = stsupplychaindevjla
