@@ -1,6 +1,3 @@
-data/*
-!data/*.dvc
-!data/.gitignore
 #El paquete de herramientas de terraform
 .terraform 
 #El diccionario de recursos y secretos
@@ -12,3 +9,4 @@ __pycache__/
 .venv/
 .ipynb_checkpoints/
 .env
+
