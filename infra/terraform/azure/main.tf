@@ -1,5 +1,5 @@
 locals {
-  region_short = { eastus2 = "eus2", westus3 = "wus3" }[var.location]
+  region_short = { eastus2 = "eus2", westus3 = "wus3", westcentralus = "wcus" }[var.location]
   suffix       = "${var.environment}-${local.region_short}"
 
   tags = {
