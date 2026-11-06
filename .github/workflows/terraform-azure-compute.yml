@@ -1,0 +1,76 @@
+name: terraform-azure-compute
+
+# Módulo efímero (ADR-002):
+# - pull_request: formato, validate y plan.
+# - workflow_dispatch: "up" aplica (empieza una sesión de cómputo), "down" destruye.
+# - schedule: destroy nocturno a la 01:00 de CDMX (07:00 UTC) por si quedó encendido.
+# Un merge a main NO aplica este módulo, para que un merge nunca encienda recursos que cobran.
+
+on:
+  pull_request:
+    paths:
+      - "infra/terraform/azure-compute/**"
+      - ".github/workflows/terraform-azure-compute.yml"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "up = apply, down = destroy"
+        type: choice
+        options: [up, down]
+        default: down
+  schedule:
+    - cron: "0 7 * * *"
+
+concurrency:
+  group: terraform-azure-compute
+  cancel-in-progress: false
+
+permissions:
+  id-token: write # pedir el token OIDC a GitHub
+  contents: read  # leer el código
+
+env:
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  ARM_USE_OIDC: "true"
+  TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform/azure-compute
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.17.0"
+          terraform_wrapper: false
+
+      - name: Formato
+        run: terraform fmt -check -recursive
+
+      - name: Init
+        run: terraform init -input=false
+
+      - name: Validate
+        run: terraform validate
+
+      - name: Plan (pull request)
+        if: github.event_name == 'pull_request'
+        run: terraform plan -input=false
+
+      - name: Apply (up)
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'up'
+        run: terraform apply -input=false -auto-approve
+
+      - name: Destroy (down o nocturno)
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.action == 'down')
+        run: terraform destroy -input=false -auto-approve
