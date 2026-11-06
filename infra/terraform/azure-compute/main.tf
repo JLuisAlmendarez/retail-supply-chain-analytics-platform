@@ -1,4 +1,8 @@
 locals {
+
+  region_short = { eastus2 = "eus2", westus3 = "wus3", westcentralus = "wcus" }[var.location]
+  suffix       = "${var.environment}-${local.region_short}"
+
   tags = {
     project     = "supply-chain"
     environment = var.environment
@@ -11,21 +15,21 @@ locals {
 # ---------- Lo que ya existe en el módulo persistente "azure" ----------
 
 data "azurerm_resource_group" "main" {
-  name = "rg-supplychain-${var.environment}-eus2"
+  name = "rg-supplychain-${local.suffix}"
 }
 
 data "azurerm_subnet" "dbw" {
   for_each = toset(["host", "container"])
 
   name                 = "snet-dbw-${each.key}"
-  virtual_network_name = "vnet-supplychain-${var.environment}-eus2"
+  virtual_network_name = "vnet-supplychain-${local.suffix}"
   resource_group_name  = data.azurerm_resource_group.main.name
 }
 
 # ---------- NAT Gateway (cobra por hora) ----------
 
 resource "azurerm_public_ip" "nat" {
-  name                = "pip-ng-supplychain-${var.environment}-eus2"
+  name                = "pip-ng-supplychain-${local.suffix}"
   resource_group_name = data.azurerm_resource_group.main.name
   location            = data.azurerm_resource_group.main.location
   allocation_method   = "Static"
@@ -34,7 +38,7 @@ resource "azurerm_public_ip" "nat" {
 }
 
 resource "azurerm_nat_gateway" "main" {
-  name                    = "ng-supplychain-${var.environment}-eus2"
+  name                    = "ng-supplychain-${local.suffix}"
   resource_group_name     = data.azurerm_resource_group.main.name
   location                = data.azurerm_resource_group.main.location
   sku_name                = "Standard"
