@@ -40,7 +40,7 @@ resource "azurerm_storage_account" "lake" {
   tags = local.tags
 
   lifecycle {
-    prevent_destroy = false
+    prevent_destroy = true
   }
 }
 
@@ -130,6 +130,6 @@ resource "azurerm_databricks_workspace" "main" {
   tags = local.tags
 
   lifecycle {
-    prevent_destroy = false
+    prevent_destroy = true
   }
 }
