@@ -1,7 +1,12 @@
 variable "location" {
   type        = string
   description = "Region de azure donde se crean los recursos"
-  default     = "eastus2"
+  default     = "westus3"
+
+  validation {
+    condition     = contains(["eastus2", "westus3"], var.location)
+    error_message = "location debe ser \"eastus2\" o \"westus3\" (ver ADR-003)."
+  }
 }
 
 variable "environment" {
