@@ -1,4 +1,7 @@
 locals {
+  region_short = { eastus2 = "eus2", westus3 = "wus3" }[var.location]
+  suffix       = "${var.environment}-${local.region_short}"
+
   tags = {
     project     = "supply-chain"
     environment = var.environment
@@ -14,7 +17,7 @@ locals {
 }
 
 resource "azurerm_resource_group" "main" {
-  name     = "rg-supplychain-${var.environment}-eus2"
+  name     = "rg-supplychain-${local.suffix}"
   location = var.location
   tags     = local.tags
 }
@@ -37,7 +40,7 @@ resource "azurerm_storage_account" "lake" {
   tags = local.tags
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -59,7 +62,7 @@ resource "azurerm_role_assignment" "data_admin_blob" {
 # ---------- Red para Databricks ----------
 
 resource "azurerm_virtual_network" "main" {
-  name                = "vnet-supplychain-${var.environment}-eus2"
+  name                = "vnet-supplychain-${local.suffix}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   address_space       = ["10.10.0.0/16"]
@@ -89,7 +92,7 @@ resource "azurerm_subnet" "dbw" {
 }
 
 resource "azurerm_network_security_group" "dbw" {
-  name                = "nsg-dbw-supplychain-${var.environment}-eus2"
+  name                = "nsg-dbw-supplychain-${local.suffix}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   tags                = local.tags
@@ -105,11 +108,11 @@ resource "azurerm_subnet_network_security_group_association" "dbw" {
 # ---------- Workspace de Databricks ----------
 
 resource "azurerm_databricks_workspace" "main" {
-  name                        = "dbw-supplychain-${var.environment}-eus2"
+  name                        = "dbw-supplychain-${local.suffix}"
   resource_group_name         = azurerm_resource_group.main.name
   location                    = azurerm_resource_group.main.location
   sku                         = "premium"
-  managed_resource_group_name = "rg-supplychain-${var.environment}-dbw-managed-eus2"
+  managed_resource_group_name = "rg-supplychain-${var.environment}-dbw-managed-${local.region_short}"
 
   public_network_access_enabled         = true
   network_security_group_rules_required = "AllRules"
@@ -127,6 +130,6 @@ resource "azurerm_databricks_workspace" "main" {
   tags = local.tags
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
